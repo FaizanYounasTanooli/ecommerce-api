@@ -4,6 +4,11 @@ using ecommerce_api.Repositories;
 using ecommerce_api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using System.Text;
+
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace ecommerce_api.Facades
 {
@@ -14,7 +19,7 @@ namespace ecommerce_api.Facades
         private readonly UserManager<User> _userManager = userManager;
         private readonly CartRepository _cartRepository = cartRepository;
         
-        public async Task<User> SignIn(string userName,string Password)
+        public async Task<string> SignIn(string userName,string Password)
         {
             var Result = await _signInManager.PasswordSignInAsync(userName, Password,true,false);
             if (Result.Succeeded) {
@@ -22,6 +27,7 @@ namespace ecommerce_api.Facades
                 var user = await _userManager.FindByNameAsync(userName);
                 if (user != null)
                 {
+                    
                     _userService.LoggedInUser = user;
                     var userCart = _cartRepository.UsersFirst();
                     if (userCart != null) {
@@ -33,8 +39,15 @@ namespace ecommerce_api.Facades
                         _cartRepository.Add(cart);
                         _userService.userCart = cart;
                     }
+                    var userForService = new UserDto()
+                    {
+                        Id = user.Id,
+                        Name = user.UserName,
+                        Email = user.Email,
 
-                    return user;
+                    };
+
+                    return await GenerateToken(user);
                 }
                 else
                 {
@@ -62,8 +75,36 @@ namespace ecommerce_api.Facades
             }
             else
             {
-                throw new Exception("Un able to register user");
+                throw new Exception( String.Join(", ",result.Errors.Select(item=>item.Description)));
             }
+        }
+
+        async Task<string> GenerateToken(User user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "User"; // Assign a default role if necessary
+
+            // Create claims
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.Role, role)
+            };
+
+                    // Generate JWT token
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("asdfASD123!@#1111111122222313135"));
+                    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                    var token = new JwtSecurityToken(
+                        issuer: "testdomain.com",
+                        audience: "testdomain.com",
+                        claims: claims,
+                        expires: DateTime.Now.AddHours(30),
+                        signingCredentials: creds);
+
+                    var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return tokenString;
         }
     }
 

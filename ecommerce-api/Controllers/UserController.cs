@@ -25,7 +25,8 @@ namespace ecommerce_api.Controllers
         [HttpGet]
         public async Task<IActionResult> SignIn(string userName,string password)
         {
-            return Ok(await _useFacade.SignIn(userName,password));
+            var Token = await _useFacade.SignIn(userName, password);
+            return Ok(new { Token = Token });
         }
 
     }

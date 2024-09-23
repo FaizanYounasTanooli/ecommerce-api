@@ -21,7 +21,11 @@ namespace ecommerce_api.Extensions
             services.AddScoped<UserService>();
             services.AddScoped<CartService>();
         }
-
+        public static void AddFacades(this IServiceCollection services)
+        {
+            services.AddScoped<UserFacade>();
+            services.AddScoped<EcommeranceFacade>();
+        }
         public static void AddIdentityFramework(this IServiceCollection services)
         {
 

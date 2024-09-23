@@ -21,11 +21,12 @@ namespace ecommerce_api
             builder.Services.AddIdentityFramework();
             //Extension
             builder.Services.AddServices();
+            builder.Services.AddFacades();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<EcommeranceContext>(options =>
-                        options.UseMySQL("Server=localhost;Database=WebPOS;Uid=root;Pwd=L-v11wK8XyIadp4g;", migrations => migrations.MigrationsAssembly("ecommerce_api")));
+                        options.UseMySQL("Server=localhost;Database=ecommerce_api;Uid=root;Pwd=L-v11wK8XyIadp4g;", migrations => migrations.MigrationsAssembly("ecommerce_api")));
 
             var app = builder.Build();
             //Extension

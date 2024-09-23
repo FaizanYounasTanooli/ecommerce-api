@@ -1,5 +1,6 @@
 ﻿using ecommerce_api.DTO;
 using ecommerce_api.Facades;
+using ecommerce_api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +12,10 @@ namespace ecommerce_api.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly EcommeranceFacade _ecommerceFacade;
-        public ProductsController(EcommeranceFacade ecommeranceFacade)
+        private readonly UserService _userService;
+        public ProductsController(EcommeranceFacade ecommeranceFacade, UserService userService)
         {
+            _userService = userService;
             _ecommerceFacade = ecommeranceFacade;
         }
         [Authorize(Roles = "Admin")]
@@ -24,7 +27,7 @@ namespace ecommerce_api.Controllers
         }
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
-        public async Task<IActionResult> AllProducts(AddProductDto addCategoryDto)
+        public async Task<IActionResult> AllProducts()
         {
             var Products =  await _ecommerceFacade.ListProducts();
             return Ok(Products);
